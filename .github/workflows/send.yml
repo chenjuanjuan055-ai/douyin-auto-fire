@@ -9,7 +9,7 @@ on:
         default: false
   schedule:
     - cron: "0 1 * * *"
-    timezone: "Asia/Shanghai"
+      timezone: "Asia/Shanghai"
 
 concurrency:
   group: douyin-daily-sender
