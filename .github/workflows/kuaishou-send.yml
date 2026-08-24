@@ -1,0 +1,58 @@
+name: Send Kuaishou Messages (Experimental)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only verify Kuaishou login and friends without sending
+        type: boolean
+        default: true
+
+# Intentionally no `schedule` yet. Run a manual Dry Run first, then a single
+# confirmed send. Add a schedule only after the Kuaishou web UI works from a
+# GitHub-hosted runner for your own account.
+
+concurrency:
+  group: kuaishou-daily-sender
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      KUAISHOU_COOKIE: ${{ secrets.KUAISHOU_COOKIE }}
+      KUAISHOU_CONFIG: ${{ secrets.KUAISHOU_CONFIG }}
+      DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+      DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
+      HEADLESS: "true"
+      TRACE: "true"
+      TASK_CONFIG: config.kuaishou.json
+      ARTIFACTS_DIR: artifacts-kuaishou
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Write protected configuration
+        shell: bash
+        run: printf '%s' "$KUAISHOU_CONFIG" > config.kuaishou.json
+      - name: Run
+        shell: bash
+        run: |
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            python run_kuaishou.py --dry-run
+          else
+            python run_kuaishou.py
+          fi
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kuaishou-failure-${{ github.run_id }}
+          path: artifacts-kuaishou/
+          retention-days: 3

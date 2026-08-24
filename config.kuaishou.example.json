@@ -1,0 +1,13 @@
+{
+  "task_id": "kuaishou-daily-streak",
+  "timezone": "Asia/Shanghai",
+  "friends": ["好友昵称"],
+  "messages": [
+    {"type": "text", "value": "续火花 ✨"}
+  ],
+  "send_interval_seconds": {"min": 3, "max": 8},
+  "continue_on_error": true,
+  "prevent_duplicates": true,
+  "target_open_retries": 1,
+  "target_open_timeout_seconds": 15
+}
