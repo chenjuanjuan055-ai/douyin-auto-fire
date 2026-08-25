@@ -71,12 +71,7 @@ class BrowserSession:
 
 
 @asynccontextmanager
-async def open_browser(
-    settings: Settings,
-    *,
-    storage_state_label: str,
-    cookie_label: str,
-) -> AsyncIterator[BrowserSession]:
+async def open_douyin(settings: Settings) -> AsyncIterator[BrowserSession]:
     playwright: Playwright | None = None
     browser: Browser | None = None
     context: BrowserContext | None = None
@@ -89,16 +84,16 @@ async def open_browser(
 
         context_args = {"viewport": {"width": 1440, "height": 1000}, "locale": "zh-CN"}
         if settings.storage_state:
-            state = parse_auth_json(settings.storage_state, storage_state_label)
+            state = parse_auth_json(settings.storage_state, "DOUYIN_STORAGE_STATE")
             if not isinstance(state, dict):
-                raise ConfigError(f"{storage_state_label} 必须是 JSON 对象")
+                raise ConfigError("DOUYIN_STORAGE_STATE 必须是 JSON 对象")
             context_args["storage_state"] = state
         context = await browser.new_context(**context_args)
         if not settings.storage_state and settings.cookie:
-            cookies = parse_auth_json(settings.cookie, cookie_label)
+            cookies = parse_auth_json(settings.cookie, "DOUYIN_COOKIE")
             if not isinstance(cookies, list):
-                raise ConfigError(f"{cookie_label} 必须是 Cookie 数组")
-            await context.add_cookies(_normalize_cookies(cookies, cookie_label))
+                raise ConfigError("DOUYIN_COOKIE 必须是 Cookie 数组")
+            await context.add_cookies(_normalize_cookies(cookies))
 
         page = await context.new_page()
         if settings.trace:
@@ -111,16 +106,6 @@ async def open_browser(
             await browser.close()
         if playwright:
             await playwright.stop()
-
-
-@asynccontextmanager
-async def open_douyin(settings: Settings) -> AsyncIterator[BrowserSession]:
-    async with open_browser(
-        settings,
-        storage_state_label="DOUYIN_STORAGE_STATE",
-        cookie_label="DOUYIN_COOKIE",
-    ) as session:
-        yield session
 
 
 async def verify_login(page: Page, timeout_ms: int = 15_000) -> None:
@@ -266,11 +251,11 @@ def _safe_url(url: str) -> str:
     return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", ""))
 
 
-def _normalize_cookies(cookies: list[Any], label: str = "DOUYIN_COOKIE") -> list[dict[str, Any]]:
+def _normalize_cookies(cookies: list[Any]) -> list[dict[str, Any]]:
     normalized = []
     for index, cookie in enumerate(cookies):
         if not isinstance(cookie, dict):
-            raise ConfigError(f"{label}[{index}] 必须是对象")
+            raise ConfigError(f"DOUYIN_COOKIE[{index}] 必须是对象")
 
         name = cookie.get("name")
         value = cookie.get("value")
@@ -278,9 +263,9 @@ def _normalize_cookies(cookies: list[Any], label: str = "DOUYIN_COOKIE") -> list
         if name == "":
             continue
         if not isinstance(name, str) or not isinstance(value, str):
-            raise ConfigError(f"{label}[{index}] 缺少有效的 name 或 value")
+            raise ConfigError(f"DOUYIN_COOKIE[{index}] 缺少有效的 name 或 value")
         if not isinstance(domain, str) or not domain:
-            raise ConfigError(f"{label}[{index}] 缺少有效的 domain")
+            raise ConfigError(f"DOUYIN_COOKIE[{index}] 缺少有效的 domain")
 
         expires = cookie.get("expires", cookie.get("expirationDate", -1))
         if cookie.get("session") is True:
@@ -301,7 +286,7 @@ def _normalize_cookies(cookies: list[Any], label: str = "DOUYIN_COOKIE") -> list
             }
         )
     if not normalized:
-        raise ConfigError(f"{label} 没有有效 Cookie")
+        raise ConfigError("DOUYIN_COOKIE 没有有效 Cookie")
     return normalized
 
 

@@ -15,42 +15,18 @@ class ConfigError(ValueError):
 
 
 def load_settings(env_file: str | Path | None = None) -> Settings:
-    """Load the original Douyin configuration.
-
-    Kept as a wrapper so existing local users and the current GitHub workflow
-    continue to use exactly the same environment variable names.
-    """
-    return load_platform_settings("douyin", env_file)
-
-
-def load_platform_settings(platform: str, env_file: str | Path | None = None) -> Settings:
-    """Load shared runtime settings for a supported web platform.
-
-    Platform credentials intentionally use separate environment variables.  A
-    Kuaishou browser session must never accidentally receive Douyin cookies.
-    """
-    normalized_platform = platform.strip().lower()
-    prefixes = {
-        "douyin": "DOUYIN",
-        "kuaishou": "KUAISHOU",
-    }
-    try:
-        prefix = prefixes[normalized_platform]
-    except KeyError as exc:
-        raise ConfigError(f"不支持的平台: {platform!r}") from exc
-
     load_dotenv(dotenv_path=env_file)
     task_path = Path(os.getenv("TASK_CONFIG", "config.json")).expanduser()
     artifacts_dir = Path(os.getenv("ARTIFACTS_DIR", "artifacts")).expanduser()
-    default_state = Path("storage-state.json" if normalized_platform == "douyin" else "kuaishou-storage-state.json")
+    default_state = Path("storage-state.json")
     dingtalk_webhook = _optional_env("DINGTALK_WEBHOOK")
     dingtalk_secret = _optional_env("DINGTALK_SECRET")
     if bool(dingtalk_webhook) != bool(dingtalk_secret):
         raise ConfigError("DINGTALK_WEBHOOK 和 DINGTALK_SECRET 必须同时配置")
     return Settings(
         task_config_path=task_path,
-        storage_state=_optional_env(f"{prefix}_STORAGE_STATE") or (str(default_state) if default_state.is_file() else None),
-        cookie=_optional_env(f"{prefix}_COOKIE"),
+        storage_state=_optional_env("DOUYIN_STORAGE_STATE") or (str(default_state) if default_state.is_file() else None),
+        cookie=_optional_env("DOUYIN_COOKIE"),
         headless=_parse_bool(os.getenv("HEADLESS", "false"), "HEADLESS"),
         browser_path=_optional_env("BROWSER_PATH"),
         artifacts_dir=artifacts_dir,
