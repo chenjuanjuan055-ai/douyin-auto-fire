@@ -13,4 +13,5 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements-dev.txt
+      - run: python -m playwright install --with-deps chromium
       - run: python -m pytest -q
