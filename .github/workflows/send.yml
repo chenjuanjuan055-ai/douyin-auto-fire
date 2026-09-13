@@ -34,9 +34,46 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
       - run: python -m playwright install --with-deps chromium
+
+      # 配置来源优先级：仓库文件（由配置助手推送）> DOUYIN_CONFIG Secret。
+      # 这样老用户的 Secret 继续有效，用配置助手推一次后自动切换。
+      #
+      # 实现说明：这里刻意不用 heredoc 内嵌 Python。YAML 块标量 + shell heredoc
+      # 的缩进规则相互干扰（内容顶格才能让 Python 正确解析，但顶格又会打断
+      # YAML 的视觉层级），很容易写错且出错后极难排查。改用 python -c 单行 +
+      # 分号，配合 shell 自身的校验，逻辑清楚且无缩进陷阱。
       - name: Write protected configuration
         shell: bash
-        run: printf '%s' "$DOUYIN_CONFIG" > config.json
+        env:
+          REPO_CONFIG: ${{ secrets.DOUYIN_CONFIG }}
+        run: |
+          if [ -f config.json ]; then
+            echo "使用仓库里的 config.json（由配置助手推送）"
+          elif [ -n "$REPO_CONFIG" ]; then
+            echo "仓库里没有配置文件，回退到 DOUYIN_CONFIG Secret"
+            printf '%s' "$REPO_CONFIG" > config.json
+          else
+            echo "错误：既没有仓库配置文件，也没有 DOUYIN_CONFIG Secret"
+            exit 1
+          fi
+          if [ ! -s config.json ]; then
+            echo "错误：config.json 是空的"
+            exit 1
+          fi
+          python -c "import json,sys; json.load(open('config.json',encoding='utf-8')); print('config.json 校验通过')"
+
+      # Cookie 来源优先级：仓库文件（由配置助手推送）> DOUYIN_COOKIE Secret。
+      # 只在仓库里存在 cookie.active.json 时才覆盖，否则完全保持原行为。
+      - name: Load cookie from repository file
+        shell: bash
+        run: |
+          if [ -f cookie.active.json ]; then
+            echo "使用仓库里的 cookie.active.json（由配置助手推送）"
+            python -c "import json,pathlib; d=json.loads(pathlib.Path('cookie.active.json').read_text(encoding='utf-8')); p=pathlib.Path('.env'); lines=p.read_text(encoding='utf-8').splitlines() if p.is_file() else []; lines=[l for l in lines if not l.startswith('DOUYIN_COOKIE=')]; lines.append('DOUYIN_COOKIE='+json.dumps(json.dumps(d,ensure_ascii=False))); p.write_text(chr(10).join(lines)+chr(10),encoding='utf-8'); print('已写入 %d 条 Cookie 到 .env' % len(d))"
+          else
+            echo "仓库里没有 cookie 文件，继续使用 DOUYIN_COOKIE Secret"
+          fi
+
       - name: Write multi-account configuration
         shell: bash
         env:
