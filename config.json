@@ -1,0 +1,73 @@
+{
+  "task_id": "daily-streak",
+  "timezone": "Asia/Shanghai",
+  "targets": [
+    {
+      "name": "～",
+      "messages": [
+        {
+          "type": "text",
+          "value": "今天心情怎么样"
+        },
+        {
+          "type": "sticker",
+          "value": "点赞"
+        }
+      ]
+    },
+    {
+      "name": "琦念",
+      "messages": [
+        {
+          "type": "text",
+          "value": "今天心情怎么样"
+        },
+        {
+          "type": "sticker",
+          "value": "点赞"
+        }
+      ]
+    },
+    {
+      "name": "南汐🍼",
+      "messages": [
+        {
+          "type": "text",
+          "value": "今天心情怎么样"
+        },
+        {
+          "type": "sticker",
+          "value": "点赞"
+        }
+      ]
+    },
+    {
+      "name": "💤汀汀喵",
+      "messages": [
+        {
+          "type": "text",
+          "value": "今天心情怎么样"
+        },
+        {
+          "type": "sticker",
+          "value": "点赞"
+        }
+      ]
+    }
+  ],
+  "send_interval_seconds": {
+    "min": 3.0,
+    "max": 8.0
+  },
+  "continue_on_error": true,
+  "prevent_duplicates": false,
+  "target_open_retries": 1,
+  "target_open_timeout_seconds": 15.0,
+  "stickers": {
+    "点赞": {
+      "label": "点赞",
+      "category": "常用",
+      "fallback_index": 1
+    }
+  }
+}
