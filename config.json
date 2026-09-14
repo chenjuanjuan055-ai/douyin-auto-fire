@@ -11,20 +11,7 @@
         },
         {
           "type": "sticker",
-          "value": "续火花"
-        }
-      ]
-    },
-    {
-      "name": "琦念",
-      "messages": [
-        {
-          "type": "text",
-          "value": "今天心情怎么样"
-        },
-        {
-          "type": "sticker",
-          "value": "续火花"
+          "value": "比心"
         }
       ]
     },
@@ -42,31 +29,44 @@
       ]
     },
     {
-      "name": "💤汀汀喵",
+      "name": "琦念",
+      "messages": [
+        {
+          "type": "sticker",
+          "value": "比心"
+        }
+      ]
+    },
+    {
+      "name": "哈吉米",
       "messages": [
         {
           "type": "text",
-          "value": "今天心情怎么样"
+          "value": "蔻驰蔻驰"
         },
         {
           "type": "sticker",
-          "value": "续火花"
+          "value": "比心"
         }
       ]
     }
   ],
-  "stickers": {
-    "续火花": {
-      "label": "续火花",
-      "fallback_index": 0
-    }
-  },
   "send_interval_seconds": {
-    "min": 3,
-    "max": 8
+    "min": 3.0,
+    "max": 8.0
   },
   "continue_on_error": true,
   "prevent_duplicates": false,
   "target_open_retries": 1,
-  "target_open_timeout_seconds": 15
+  "target_open_timeout_seconds": 15.0,
+  "stickers": {
+    "续火花": {
+      "label": "续火花",
+      "fallback_index": 0
+    },
+    "比心": {
+      "label": "比心",
+      "fallback_index": 1
+    }
+  }
 }
