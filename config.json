@@ -56,8 +56,8 @@
     }
   ],
   "send_interval_seconds": {
-    "min": 3.0,
-    "max": 8.0
+    "min": 40.0,
+    "max": 80.0
   },
   "continue_on_error": true,
   "prevent_duplicates": false,
