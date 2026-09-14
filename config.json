@@ -34,6 +34,10 @@
         {
           "type": "sticker",
           "value": "比心"
+        },
+        {
+          "type": "text",
+          "value": "今天心情怎么样"
         }
       ]
     },
